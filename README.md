@@ -20,7 +20,7 @@ same = sum(total amount of ranks - user rank)/total amount of games
   * bot copies message into local variable
   * bot deletes original message
   * bot enters message of variable info
-3) _**Update #rankings**_
+3) _**Update #stats**_
   * delete every message in channel (except tappedout info for later use)
   * bot enters new data
     * rankings
