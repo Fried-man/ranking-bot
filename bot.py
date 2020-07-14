@@ -49,10 +49,10 @@ async def on_ready():
                                     for player in scores:
                                         if player[0] == z:
                                             found = True
-                                            player[1] += (len(x) - y)/float(len(x))
+                                            player[1] += len(x) - y
                                             player[2] += 1
                                     if found is False:
-                                        newEntry = [z, (len(x) - y)/float(len(x)), 1]
+                                        newEntry = [z, len(x) - y, 1]
                                         scores.append(newEntry)
                         #print()
                 scores.remove(scores[0])
@@ -64,7 +64,7 @@ async def on_ready():
                 scores.reverse()
                 for i in range(0, len(scores)):
                     player = scores[i]
-                    outputText += str(i + 1) + ") " + player[0] + " - " + str(round(player[1]*4, 2)) + "\n"
+                    outputText += str(i + 1) + ") " + player[0] + " - " + str(round(player[1], 2)) + "\n"
                 outputChannel = discord.utils.get(message.guild.channels, id=732452709101469757)
                 messages = await outputChannel.history(limit=1000).flatten()
                 for x in messages:
