@@ -1,5 +1,14 @@
 # ranking-bot
 This bot is intended to provide statistics and manage general scoreboard info.
+## Ideas
+- #decks should have tappedout links embeded into the deck names
+- #decks should have X-Mage deck files as the deck content
+- The leaderboards should have a version for a month/6 months/year etc and an overall as seperate versions
+- There should be a stat for most used deck per player
+- There should be a stat win-lose stat for each deck
+- There should ba a stat for how many games each player has completed
+- There should be a stat for mode rank per player
+- There should be a stat for the most common times for games to finish (average)
 ## How to Rank 
 same = sum(total amount of ranks - user rank)/total amount of games
 | All | X-Mage | IRL/Budget|
@@ -29,4 +38,4 @@ same = sum(total amount of ranks - user rank)/total amount of games
 ## TODO:
 - Finalize everything
 - Program everything
-- Add webhook in #game-dev-logs for this repo
+- ~~Add webhook in #dev-logs for this repo~~
