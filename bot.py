@@ -19,18 +19,35 @@ async def on_ready():
             if message.content == '/help':
                 await message.channel.send('List of commands:\n- "/log" copies all non bot messages\n- "/clean" deletes all of my messages and left over commands\n- "/rank them" updates #stats')
             elif message.content == '/log':
+                edhRanked = headerMaker("EDH / Commander Games")
                 messages = await message.channel.history(limit=1000).flatten()
-                #await message.channel.send(str(messages))
                 messages.reverse()
-                for x in messages:
-                    await message.channel.send(str(x.created_at) + " | " + str(x.content))
-                    print(str(x.created_at) + " | " + str(x.content))
-                #print(str(messages))
+                for i in range(0, len(messages)): # go through each game
+                    x = messages[i] # str(x.created_at)
+                    x, sep, tail = x.content.partition('*') # delete any end-game comments
+                    if x.startswith('X-Mage, Commander:'): # check if legit edh game
+                        edhRanked += str(i + 1).rjust(3, '0') + "  "
+                        x = re.split('\)', x) # split up by ranking
+                        for y in range(1, len(x)): # for each ranking y++
+                            x[y] = x[y].split() # split tied players up and segregate unnecessary text
+                        x = [[i for i in nested if '<' in i and '>' in i] for nested in x]
+                        for y in range(1, len(x)): # for each ranking y++
+                            tiePush = 0
+                            for i in range(0, y): # iterate through players
+                                tiePush += len(x[i]) - 1
+                            edhRanked += str(y + tiePush + 1) + ") "
+                            for z in x[y]: # each player in section
+                                edhRanked += z + " "
+                        edhRanked += "\n"
+                for x in messageTruncate(edhRanked):
+                    await message.channel.send(x) # send results to #stats
             elif message.content == '/clean':
                 messages = await message.channel.history(limit=1000).flatten()
                 for x in messages:
                     if x.author == client.user or x.content.startswith('/'):
                         await x.delete()
+            elif message.content == '/new game':
+                response = "Who is playing?\n"
             elif message.content == '/rank them':
                 inputChannel = discord.utils.get(message.guild.channels, id=713227906725183508) # setup #scoreboard
                 messages = await inputChannel.history(limit=1000).flatten() # read through all messages in channel
@@ -114,18 +131,14 @@ async def on_ready():
                 for x in messages: # go through recorded messages
                     if x.author == client.user or x.content.startswith('/'): # find any comment from bot or old commands
                         await x.delete() # delete them
-                await outputChannel.send(printData("Overall Rankings", scores)) # send results to #stats
-                #for x in messageTruncate(printData("Overall Rankings", scores)):
-                #    if x != '':
-                #        await outputChannel.send(x) # send results to #stats
+                #await outputChannel.send(printRanking("Overall Rankings", scores)) # send results to #stats
+                for x in messageTruncate(printRanking("Overall Rankings", scores)):
+                    await outputChannel.send(x) # send results to #stats
             else:
                 await message.channel.send('The command "' + message.content + '" is unkown to me. Type "help" for a list of commands')
 
-def printData(dataName, cleanData):
-    outputText = '-------------------------------------------------------------------\n'
-    for x in range(0, math.floor((82 - len(dataName.upper())) / 2)):
-        outputText += ' '
-    outputText += dataName.upper() + '\n-------------------------------------------------------------------\n'
+def printRanking(dataName, cleanData):
+    outputText = headerMaker(dataName)
     for i in range(0, len(cleanData)): # for each item in scoring array i++
         player = cleanData[i] # player array being set
         print(player)
@@ -141,16 +154,24 @@ def printData(dataName, cleanData):
                 outputText += str(player[j][len(player[j]) - 1]) + ' )\n'
     return outputText
 
-def messageTruncate(inputString):
-    arrayVersion = []
-    maxLength = 1000
-    for i in range(0, math.floor(len(inputString) / maxLength)):
-        arrayVersion.append(inputString[(i-1)*maxLength-1:i*maxLength+1])
-        #print(arrayVersion[len(arrayVersion)-1])
-    if len(inputString) > maxLength:
-        arrayVersion.append(inputString[len(inputString) - maxLength:len(inputString)])
-        return arrayVersion
-    else:
-        return [inputString[0:int(len(inputString))]]
+def headerMaker(dataName):
+    outputText = '-------------------------------------------------------------------\n'
+    outputText += dataName.upper().center(82) + '\n-------------------------------------------------------------------\n'
+    return outputText
 
-client.run('???')
+def messageTruncate(inputString):
+    maxLength = 1999
+    if len(inputString) < maxLength:
+        return [inputString[0:int(len(inputString))]]
+    arrayVersion = []
+    i = 0 # starting character for message
+    while (len(arrayVersion) + 1) * maxLength < len(inputString):
+        for j in range(maxLength * (len(arrayVersion) + 1), 0, -1): # by end of max message
+            if inputString[j-1:j] == "\n": # find new closest new line
+                arrayVersion.append(inputString[i:j])
+                i = j
+                break
+    arrayVersion.append(inputString[i:len(inputString)])
+    return arrayVersion
+
+client.run('NzMyNTI2MjIzNzEyMDU5NTA0.Xw9Kiw.nSmUfNGpQVoBNWR4Dv0bdK_0aX4')
