@@ -122,6 +122,7 @@ async def on_ready():
                 scores.remove(scores[0]) # remove first item in scoring array (its blank)
                 #print(scores)
                 for player in scores: # go through tracked players
+                    player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
                     player[3] = (player[1] / float(player[2])) # divide total score by total games
                 #print(scores)
                 scores.sort(key=lambda x: x[3]) # rank them by score
@@ -135,6 +136,7 @@ async def on_ready():
                 for x in messageTruncate(printRanking("Overall Rankings", scores)):
                     await outputChannel.send(x) # send results to #stats
             else:
+                print(message.content)
                 await message.channel.send('The command "' + message.content + '" is unkown to me. Type "help" for a list of commands')
 
 def printRanking(dataName, cleanData):
@@ -174,4 +176,4 @@ def messageTruncate(inputString):
     arrayVersion.append(inputString[i:len(inputString)])
     return arrayVersion
 
-client.run('NzMyNTI2MjIzNzEyMDU5NTA0.Xw9Kiw.nSmUfNGpQVoBNWR4Dv0bdK_0aX4')
+client.run('???')
