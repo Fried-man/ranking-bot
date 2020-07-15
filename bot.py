@@ -36,6 +36,7 @@ async def on_ready():
                 messages = await inputChannel.history(limit=1000).flatten() # read through all messages in channel
                 messages.reverse() # put them in chronological order
                 scores = [["",0,0]] # setup intial value for array
+                counterduh = 0
                 for x in messages: # go through each game
                     x, sep, tail = x.content.partition('*') # delete any end-game comments
                     totalPlayers = x.count('<')
@@ -44,53 +45,63 @@ async def on_ready():
                         totalCounted = 0
                         for y in range(1, len(x)): # for each ranking y++
                             x[y] = x[y].split() # split tied players up and segregate unnecessary text
-                            #print(str(y) + ")", end = " ")
                             tiedCounter = 0
+                        x = [[i for i in nested if '<' in i and '>' in i] for nested in x]
+                        x.remove(x[0])
+                        for y in range(0, len(x)): # for each ranking y++
                             for z in x[y]: # for each item in subarray (rank is common thread)
-                                if '<' in z and '>' in z: # check if item is a player
-                                    totalCounted += 1
-                                    #if (rank < z)
-                                    #print(z, end = " ")
-                                    found = False # assume first entry for player
-                                    for player in scores: # check if player is already added to scoring array
-                                        if player[0] == z: # player was added in previous game
-                                            found = True # change first entry status to true
-                                            player[1] += len(x) - y # add score to total score
-                                            player[2] += 1 # add 1 to total game
-                                            for i in range(4, 3 + totalPlayers):
-                                                if i > len(player):
-                                                    newThing = [i - 3,0]
-                                                    for j in range(1, i - 3 + 1): # add all places
-                                                        newThing.append(0)
-                                                    newPlayer.append(newThing)
-                                            #print(player[len(player)-1][0])
-                                            if len(player) <= totalPlayers + 3: # never played with this many players
-                                                multiScore = [totalPlayers, 1]
-                                                for i in range(1, totalPlayers + 1): # add all places
-                                                    multiScore.append(0)
-                                                multiScore[y + 1] = 1
-                                                player.append(multiScore)
-                                            else:
-                                                #print(player[totalPlayers + 3])
-                                                #print(player)
-                                                #print(player[totalPlayers + 2])
-                                                player[totalPlayers + 3][y + 1] += 1
-                                    if found is False: # first game for the player
-                                        newPlayer = [z, len(x) - y, 1, 0]
+                                totalCounted += 1
+                                tiePush = 0
+                                for i in range(0, y): # iterate through players
+                                    tiePush += len(x[i]) - 1
+                                found = False # assume first entry for player
+                                for player in scores: # check if player is already added to scoring array
+                                    if player[0] == z: # player was added in previous game
+                                        found = True # change first entry status to true
+                                        player[1] += len(x) - y # add score to total score
+                                        player[2] += 1 # add 1 to total game
                                         for i in range(4, 3 + totalPlayers):
-                                            if i > len(newPlayer):
+                                            if i > len(player):
                                                 newThing = [i - 3,0]
                                                 for j in range(1, i - 3 + 1): # add all places
                                                     newThing.append(0)
                                                 newPlayer.append(newThing)
-                                        multiScore = [totalPlayers, 1]
-                                        for i in range(1, totalPlayers + 1): # add all places
-                                            multiScore.append(0)
-                                        multiScore[y + 1] = 1
-                                        newPlayer.append(multiScore)
-                                        #print(newPlayer)
-                                        scores.append(newPlayer) # copy paste values from first game into scoring array
-                                        #print(str(scores[length(scores) - 1]))
+                                        #print(player[len(player)-1][0])
+                                        if len(player) <= totalPlayers + 2: # never played with this many players
+                                            multiScore = [totalPlayers, 0]
+                                            for i in range(2, totalPlayers + 2): # add all places
+                                                multiScore.append(0)
+                                            multiScore[y + 2 + tiePush] = 1
+                                            player.append(multiScore)
+                                        else:
+                                            #print(player[totalPlayers + 3])
+                                            #print(player)
+                                            #print(player[totalPlayers + 2])
+                                            player[totalPlayers + 2][y + 2 + tiePush] += 1
+                                        player[totalPlayers + 2][1] += 1
+                                if found is False: # first game for the player
+                                    newPlayer = [z, len(x) - y, 1, 0] # name, position, total games, final score
+                                    for i in range(4, 3 + totalPlayers):
+                                        if i > len(newPlayer):
+                                            newThing = [i - 3,0]
+                                            for j in range(1, i - 3 + 1): # add all places
+                                                newThing.append(0)
+                                            newPlayer.append(newThing)
+                                    multiScore = [totalPlayers, 1]
+                                    for i in range(2, totalPlayers + 2): # add all places
+                                        multiScore.append(0)
+                                    multiScore[y + 2 + tiePush] = 1
+                                    newPlayer.append(multiScore)
+                                    #print(newPlayer)
+                                    scores.append(newPlayer) # copy paste values from first game into scoring array
+                                    #scores[len(scores)-1][1] += 1
+                            #else:
+                            #    x[y].remove(z)
+                        counterduh += 1
+                        print(counterduh)
+                        for x in scores[1:]:
+                            print(x)
+                        print("\n\n")
                 scores.remove(scores[0]) # remove first item in scoring array (its blank)
                 #print(scores)
                 for player in scores: # go through tracked players
@@ -111,7 +122,10 @@ async def on_ready():
                 await message.channel.send('The command "' + message.content + '" is unkown to me. Type "help" for a list of commands')
 
 def printData(dataName, cleanData):
-    outputText = '--- ' + dataName + ' ---\n'
+    outputText = '-------------------------------------------------------------------\n'
+    for x in range(0, math.floor((82 - len(dataName.upper())) / 2)):
+        outputText += ' '
+    outputText += dataName.upper() + '\n-------------------------------------------------------------------\n'
     for i in range(0, len(cleanData)): # for each item in scoring array i++
         player = cleanData[i] # player array being set
         print(player)
@@ -121,14 +135,13 @@ def printData(dataName, cleanData):
         outputText += '    - Total Score: ' + str(player[1]) + '\n' # fourth line
         for j in range(4, len(player)):
             if player[j][1] != 0:
-                outputText += '    - ' + str(player[j][0]) + ' person game score: ( '
+                outputText += '    - ' + str(player[j][0]) + ' person game ending positions: ( '
                 for k in range(2, len(player[j]) - 1):
                     outputText += str(player[j][k]) + ' - '
                 outputText += str(player[j][len(player[j]) - 1]) + ' )\n'
     return outputText
 
 def messageTruncate(inputString):
-    print('\n\n\n\n\n\n')
     arrayVersion = []
     maxLength = 1000
     for i in range(0, math.floor(len(inputString) / maxLength)):
@@ -140,4 +153,4 @@ def messageTruncate(inputString):
     else:
         return [inputString[0:int(len(inputString))]]
 
-client.run('NzMyNTI2MjIzNzEyMDU5NTA0.Xw3KdA.lAGuOZNaoGEwBibSX0KcmQcV0CU')
+client.run('???')
