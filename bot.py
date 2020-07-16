@@ -37,10 +37,11 @@ async def on_ready():
                                 tiePush += len(x[i]) - 1
                             edhRanked += str(y + tiePush + 1) + ") "
                             for z in x[y]: # each player in section
-                                edhRanked += z + " "
+                                edhRanked += "***`" + discord.utils.get(message.guild.members, id=int(z[3:21])).name + "`*** "
                         edhRanked += "\n"
                 for x in messageTruncate(edhRanked):
                     await message.channel.send(x) # send results to #stats
+                    x = 0
             elif message.content == '/clean':
                 messages = await message.channel.history(limit=1000).flatten()
                 for x in messages:
@@ -144,7 +145,7 @@ def printRanking(dataName, cleanData):
     for i in range(0, len(cleanData)): # for each item in scoring array i++
         player = cleanData[i] # player array being set
         print(player)
-        outputText += str(i + 1) + ") " + player[0] + "\n" # first line
+        outputText += "***`" + str(i + 1) + ") " + player[0] + "`***\n" # first line
         outputText += '    - Calculated Score: ' + str(round(player[3], 2)) + '\n' #second line
         outputText += '    - Games Played & Recorded: ' + str(player[2]) + '\n' #third line
         outputText += '    - Total Score: ' + str(player[1]) + '\n' # fourth line
