@@ -1,6 +1,7 @@
 import discord
 import re
 import math
+from datetime import datetime
 
 client = discord.Client()
 
@@ -22,23 +23,14 @@ async def on_ready():
                 edhRanked = headerMaker("EDH / Commander Games")
                 messages = await message.channel.history(limit=1000).flatten()
                 messages.reverse()
-                for i in range(0, len(messages)): # go through each game
-                    x = messages[i] # str(x.created_at)
-                    x, sep, tail = x.content.partition('*') # delete any end-game comments
-                    if x.startswith('X-Mage, Commander:'): # check if legit edh game
-                        edhRanked += str(i + 1).rjust(3, '0') + "  "
-                        x = re.split('\)', x) # split up by ranking
-                        for y in range(1, len(x)): # for each ranking y++
-                            x[y] = x[y].split() # split tied players up and segregate unnecessary text
-                        x = [[i for i in nested if '<' in i and '>' in i] for nested in x]
-                        for y in range(1, len(x)): # for each ranking y++
-                            tiePush = 0
-                            for i in range(0, y): # iterate through players
-                                tiePush += len(x[i]) - 1
-                            edhRanked += str(y + tiePush + 1) + ") "
-                            for z in x[y]: # each player in section
-                                edhRanked += "***`" + discord.utils.get(message.guild.members, id=int(z[3:21])).name + "`*** "
-                        edhRanked += "\n"
+                messages = messageToArray(messages)
+                for num, game in enumerate(messages, start = 1): # go through each game
+                    edhRanked += str(num).rjust(3, '0') + "  "
+                    for position in game[1:]:
+                        edhRanked += str(position[0]) + ") "
+                        for player in position[1:]:
+                            edhRanked += "***`" + discord.utils.get(message.guild.members, id=int(player[3:21])).name + "`*** "
+                    edhRanked += "\n"
                 for x in messageTruncate(edhRanked):
                     await message.channel.send(x) # send results to #stats
                     x = 0
@@ -52,110 +44,67 @@ async def on_ready():
             elif message.content == '/rank them':
                 inputChannel = discord.utils.get(message.guild.channels, id=713227906725183508) # setup #scoreboard
                 messages = await inputChannel.history(limit=1000).flatten() # read through all messages in channel
-                messages.reverse() # put them in chronological order
-                scores = [["",0,0]] # setup intial value for array
-                counterduh = 0
-                for x in messages: # go through each game
-                    x, sep, tail = x.content.partition('*') # delete any end-game comments
-                    totalPlayers = x.count('<')
-                    if x.startswith('X-Mage, Commander:'): # check if legit edh game
-                        x = re.split('\)', x) # split up by ranking
-                        totalCounted = 0
-                        for y in range(1, len(x)): # for each ranking y++
-                            x[y] = x[y].split() # split tied players up and segregate unnecessary text
-                            tiedCounter = 0
-                        x = [[i for i in nested if '<' in i and '>' in i] for nested in x]
-                        x.remove(x[0])
-                        for y in range(0, len(x)): # for each ranking y++
-                            for z in x[y]: # for each item in subarray (rank is common thread)
-                                totalCounted += 1
-                                tiePush = 0
-                                for i in range(0, y): # iterate through players
-                                    tiePush += len(x[i]) - 1
-                                found = False # assume first entry for player
-                                for player in scores: # check if player is already added to scoring array
-                                    if player[0] == z: # player was added in previous game
-                                        found = True # change first entry status to true
-                                        player[1] += len(x) - y # add score to total score
-                                        player[2] += 1 # add 1 to total game
-                                        for i in range(4, 3 + totalPlayers):
-                                            if i > len(player):
-                                                newThing = [i - 3,0]
-                                                for j in range(1, i - 3 + 1): # add all places
-                                                    newThing.append(0)
-                                                newPlayer.append(newThing)
-                                        #print(player[len(player)-1][0])
-                                        if len(player) <= totalPlayers + 2: # never played with this many players
-                                            multiScore = [totalPlayers, 0]
-                                            for i in range(2, totalPlayers + 2): # add all places
-                                                multiScore.append(0)
-                                            multiScore[y + 2 + tiePush] = 1
-                                            player.append(multiScore)
-                                        else:
-                                            #print(player[totalPlayers + 3])
-                                            #print(player)
-                                            #print(player[totalPlayers + 2])
-                                            player[totalPlayers + 2][y + 2 + tiePush] += 1
-                                        player[totalPlayers + 2][1] += 1
-                                if found is False: # first game for the player
-                                    newPlayer = [z, len(x) - y, 1, 0] # name, position, total games, final score
-                                    for i in range(4, 3 + totalPlayers):
-                                        if i > len(newPlayer):
-                                            newThing = [i - 3,0]
-                                            for j in range(1, i - 3 + 1): # add all places
-                                                newThing.append(0)
-                                            newPlayer.append(newThing)
-                                    multiScore = [totalPlayers, 1]
-                                    for i in range(2, totalPlayers + 2): # add all places
-                                        multiScore.append(0)
-                                    multiScore[y + 2 + tiePush] = 1
-                                    newPlayer.append(multiScore)
-                                    #print(newPlayer)
-                                    scores.append(newPlayer) # copy paste values from first game into scoring array
-                                    #scores[len(scores)-1][1] += 1
-                            #else:
-                            #    x[y].remove(z)
-                        counterduh += 1
-                        print(counterduh)
-                        for x in scores[1:]:
-                            print(x)
-                        print("\n\n")
-                scores.remove(scores[0]) # remove first item in scoring array (its blank)
-                #print(scores)
-                for player in scores: # go through tracked players
-                    player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
-                    player[3] = (player[1] / float(player[2])) # divide total score by total games
-                #print(scores)
-                scores.sort(key=lambda x: x[3]) # rank them by score
-                scores.reverse() # reverse to have #1 be first
+                messages.reverse()
+                messages = messageToArray(messages)
+                scores = []
+                scores.append(["Overall Rankings", rankGames(messages)])
+                monthly = []
+                for game in messages:
+                    Found = False
+                    game[0] = str(game[0].strftime("%B - %Y"))
+                    for month in monthly:
+                        if game[0] == month[0]:
+                            Found = True
+                            month[1].append(game)
+                    if Found is False:
+                        monthly.append([game[0], [game]])
+                print("\n\n\n")
+                for month in monthly:
+                    print(month)
+                    scores.append([month[0], rankGames(month[1])])
+                print("\n\n\n")
                 outputChannel = discord.utils.get(message.guild.channels, id=732452709101469757) # setup #stats
                 messages = await outputChannel.history(limit=1000).flatten() # read all messages in #stats
                 for x in messages: # go through recorded messages
                     if x.author == client.user or x.content.startswith('/'): # find any comment from bot or old commands
                         await x.delete() # delete them
-                #await outputChannel.send(printRanking("Overall Rankings", scores)) # send results to #stats
-                for x in messageTruncate(printRanking("Overall Rankings", scores)):
-                    await outputChannel.send(x) # send results to #stats
+                for mode in scores:
+                    #print(mode[1][0][1])
+                    #print(mode[1][1])
+                    #print(mode[1][0][1][0][3:len(mode[1][0][1][0]) - 1])
+                    for player in mode[1][0]: # go through ranked players
+                        #print("this is the message: " + str(player[0][3:len(player[0]) - 1]))
+                        player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
+                    for player in mode[1][1]: # go through unranked players
+                        player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
+                    for x in messageTruncate(printRanking(mode[0], mode[1])):
+                        await outputChannel.send(x) # send results to #stats
             else:
                 print(message.content)
                 await message.channel.send('The command "' + message.content + '" is unkown to me. Type "help" for a list of commands')
 
 def printRanking(dataName, cleanData):
     outputText = headerMaker(dataName)
-    for i in range(0, len(cleanData)): # for each item in scoring array i++
-        player = cleanData[i] # player array being set
-        print(player)
-        outputText += "***`" + str(i + 1) + ") " + player[0] + "`***\n" # first line
-        outputText += '    - Calculated Score: ' + str(round(player[3], 2)) + '\n' #second line
-        outputText += '    - Games Played & Recorded: ' + str(player[2]) + '\n' #third line
-        outputText += '    - Total Score: ' + str(player[1]) + '\n' # fourth line
-        for j in range(4, len(player)):
-            if player[j][1] != 0:
-                outputText += '    - ' + str(player[j][0]) + ' person game ending positions: ( '
-                for k in range(2, len(player[j]) - 1):
-                    outputText += str(player[j][k]) + ' - '
-                outputText += str(player[j][len(player[j]) - 1]) + ' )\n'
+    outputText += "* Games needed to qualify: " + str(cleanData[2]) + "\n\n"
+    for i in range(0, len(cleanData[0])): # for each ranked player
+        outputText += playerStats(cleanData[0][i], str(i + 1))
+    for unrankedPlayer in cleanData[1]: # for each unranked player
+        outputText += playerStats(unrankedPlayer, "Unranked")
     return outputText
+
+def playerStats(player, rank):
+    print(player)
+    stats = "***`" + rank + ") " + player[0] + "`***\n" # first line
+    stats += '    - Calculated Score: ' + str(round(player[3], 2)) + '\n' #second line
+    stats += '    - Games Played & Recorded: ' + str(player[2]) + '\n' #third line
+    stats += '    - Total Score: ' + str(player[1]) + '\n' # fourth line
+    for j in range(4, len(player)):
+        if player[j][1] != 0:
+            stats += '    - ' + str(player[j][0]) + ' person game ending positions: ( '
+            for k in range(2, len(player[j]) - 1):
+                stats += str(player[j][k]) + ' - '
+            stats += str(player[j][len(player[j]) - 1]) + ' )\n'
+    return stats
 
 def headerMaker(dataName):
     outputText = '-------------------------------------------------------------------\n'
@@ -176,5 +125,86 @@ def messageTruncate(inputString):
                 break
     arrayVersion.append(inputString[i:len(inputString)])
     return arrayVersion
+
+def messageToArray(inputMessages):
+    edhRanked = []
+    for i in range(0, len(inputMessages)): # go through each game
+        x = inputMessages[i] # str(x.created_at)
+        tempDate = x.created_at
+        x, sep, tail = x.content.partition('*') # delete any end-game comments
+        if x.startswith('X-Mage, Commander:'): # check if legit edh game
+            tempGame = [tempDate]
+            x = re.split('\)', x) # split up by ranking
+            for y in range(1, len(x)): # for each ranking y++
+                x[y] = x[y].split() # split tied players up and segregate unnecessary text
+            x = [[i for i in nested if '<' in i and '>' in i] for nested in x]
+            for y in range(1, len(x)): # for each ranking y++
+                tiePush = 0
+                for i in range(0, y): # iterate through players
+                    tiePush += len(x[i]) - 1
+                tempPosition = [y + tiePush + 1]
+                for z in x[y]: # each player in section
+                    tempPosition.append(z)
+                tempGame.append(tempPosition)
+            edhRanked.append(tempGame)
+    return edhRanked
+
+def rankGames(messages):
+    scores = [] # setup intial value for array
+    for game in messages: # go through each game
+        totalPlayers = str(game).count('<')
+        for position in range(1, len(game)):
+            for participant in game[position][1:]:
+                found = False
+                for player in scores: # check if player is already added to scoring array
+                    if player[0] == participant: # player was added in previous game
+                        found = True # change first entry status to true
+                        player[1] += len(game[1:]) - position + 1 # add score to total score
+                        player[2] += 1 # add 1 to total game
+                        for i in range(4, 3 + totalPlayers):
+                            if i > len(player):
+                                newThing = [i - 3,0]
+                                for j in range(1, i - 3 + 1): # add all places
+                                    newThing.append(0)
+                                newPlayer.append(newThing)
+                        if len(player) <= totalPlayers + 2: # never played with this many players
+                            multiScore = [totalPlayers, 0]
+                            for i in range(2, totalPlayers + 2): # add all places
+                                multiScore.append(0)
+                            multiScore[game[position][0] + 1] = 1
+                            player.append(multiScore)
+                        else:
+                            player[totalPlayers + 2][position + 1] += 1
+                        player[totalPlayers + 2][1] += 1
+                if found is False: # first game for the player
+                    newPlayer = [participant, len(game[1:]) - position + 1, 1, 0] # name, total score, total games, final score
+                    for i in range(4, 3 + totalPlayers):
+                        if i > len(newPlayer):
+                            newThing = [i - 3,0]
+                            for j in range(1, i - 3 + 1): # add all places
+                                newThing.append(0)
+                            newPlayer.append(newThing)
+                    multiScore = [totalPlayers, 1]
+                    for i in range(2, totalPlayers + 2): # add all places
+                        multiScore.append(0)
+                    multiScore[game[position][0] + 1] = 1
+                    newPlayer.append(multiScore)
+                    scores.append(newPlayer) # copy paste values from first game into scoring array
+        #for x in scores:
+        #    print(x)
+        #print("\n\n")
+    finalData = [[],[],0]
+    scores.sort(key=lambda x: x[2]) # rank them by total games
+    scores.reverse()
+    finalData[2] = math.floor(scores[0][2]  * .25)
+    for player in scores:
+        player[3] = (player[1] / float(player[2])) # divide total score by total games
+        if player[2] >= finalData[2]: # check for game threshold
+            finalData[0].append(player)
+        else:
+            finalData[1].append(player)
+    finalData[0].sort(key=lambda x: x[3]) # rank them by score
+    finalData[0].reverse() # reverse to have #1 be first
+    return finalData
 
 client.run('???')
