@@ -58,11 +58,11 @@ async def on_ready():
                             month[1].append(game)
                     if Found is False:
                         monthly.append([game[0], [game]])
-                print("\n\n\n")
+                #print("\n\n\n")
                 for month in monthly:
                     print(month)
                     scores.append([month[0], rankGames(month[1])])
-                print("\n\n\n")
+                #print("\n\n\n")
                 outputChannel = discord.utils.get(message.guild.channels, id=732452709101469757) # setup #stats
                 messages = await outputChannel.history(limit=1000).flatten() # read all messages in #stats
                 for x in messages: # go through recorded messages
@@ -86,14 +86,31 @@ async def on_ready():
 def printRanking(dataName, cleanData):
     outputText = headerMaker(dataName)
     outputText += "* Games needed to qualify: " + str(cleanData[2]) + "\n\n"
-    for i in range(0, len(cleanData[0])): # for each ranked player
-        outputText += playerStats(cleanData[0][i], str(i + 1))
+    print("\n\n\n\n\n\n")
+    tiedData = []
+    for i in range(0, len(cleanData[0])):
+        rank = [cleanData[0][i]]
+        j = 1
+        while i+j < len(cleanData[0]) and cleanData[0][i][3] == cleanData[0][i+j][3]:
+            rank.append(cleanData[0][i+j])
+            j += 1
+        #i = i+j
+        print(rank)
+        #print(cleanData[0][i-1][3])
+        if i == 0 or cleanData[0][i-1][3] != cleanData[0][i][3]:
+            tiedData.append(rank)
+    for i in range(0, len(tiedData)): # for each ranked player
+        for rankedPlayer in tiedData[i]:
+            tiePush = 0
+            for rank in tiedData[:i]:
+                tiePush += len(rank) - 1
+            outputText += playerStats(rankedPlayer, str(i + 1 + tiePush))
     for unrankedPlayer in cleanData[1]: # for each unranked player
         outputText += playerStats(unrankedPlayer, "Unranked")
     return outputText
 
 def playerStats(player, rank):
-    print(player)
+    #print(player)
     stats = "***`" + rank + ") " + player[0] + "`***\n" # first line
     stats += '    - Calculated Score: ' + str(round(player[3], 2)) + '\n' #second line
     stats += '    - Games Played & Recorded: ' + str(player[2]) + '\n' #third line
@@ -157,9 +174,13 @@ def rankGames(messages):
             for participant in game[position][1:]:
                 found = False
                 for player in scores: # check if player is already added to scoring array
+                    backToNormal = 0
+                    for playerAfter in range(1, len(game[position][1:])):
+                        backToNormal += playerAfter
+                    score = ((totalPlayers - game[position][0] + 1) * len(game[position][1:]) - backToNormal) / len(game[position][1:])
                     if player[0] == participant: # player was added in previous game
                         found = True # change first entry status to true
-                        player[1] += len(game[1:]) - position + 1 # add score to total score
+                        player[1] += score # add score to total score
                         player[2] += 1 # add 1 to total game
                         for i in range(4, 3 + totalPlayers):
                             if i > len(player):
@@ -177,7 +198,11 @@ def rankGames(messages):
                             player[totalPlayers + 2][position + 1] += 1
                         player[totalPlayers + 2][1] += 1
                 if found is False: # first game for the player
-                    newPlayer = [participant, len(game[1:]) - position + 1, 1, 0] # name, total score, total games, final score
+                    backToNormal = 0
+                    for playerAfter in range(1, len(game[position][1:])):
+                        backToNormal += playerAfter
+                    score = ((totalPlayers - game[position][0] + 1) * len(game[position][1:]) - backToNormal) / len(game[position][1:])
+                    newPlayer = [participant, score, 1, 0] # name, total score, total games, final score
                     for i in range(4, 3 + totalPlayers):
                         if i > len(newPlayer):
                             newThing = [i - 3,0]
