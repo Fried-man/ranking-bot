@@ -1,5 +1,6 @@
 # ranking-bot
 This bot is intended to provide statistics and manage general scoreboard info.
+[Discord API for Python Documentation](https://discordpy.readthedocs.io/en/latest/)
 ## Ideas
 - #decks should have tappedout links embeded into the deck names
 - #decks should have X-Mage deck files as the deck content

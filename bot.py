@@ -232,4 +232,4 @@ def rankGames(messages):
     finalData[0].reverse() # reverse to have #1 be first
     return finalData
 
-client.run('???')
+client.run('NzMyNTI2MjIzNzEyMDU5NTA0.XxUTlw.yGASHC67StG-1TC3cR81XRCQfTI')
