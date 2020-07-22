@@ -18,7 +18,7 @@ async def on_ready():
             #theContent = message
             await message.delete()
             if message.content == '/help':
-                await message.channel.send('List of commands:\n- "/log" copies all non bot messages\n- "/clean" deletes all of my messages and left over commands\n- "/rank them" updates #stats')
+                await message.channel.send('List of commands:\n- "/log" copies all non bot messages\n- "/clean" deletes all of my messages and left over commands\n- "/rank them" updates #stats\n- "/snitch" DM\'s people for their unformatted #scoreboard entries')
             elif message.content == '/log':
                 edhRanked = headerMaker("EDH / Commander Games")
                 messages = await message.channel.history(limit=1000).flatten()
@@ -41,6 +41,20 @@ async def on_ready():
                         await x.delete()
             elif message.content == '/new game':
                 response = "Who is playing?\n"
+            elif message.content == '/snitch':
+                if message.channel.id == 713227906725183508:
+                    messages = await message.channel.history(limit=1000).flatten() # read through all messages in channel
+                    messages.reverse()
+                    for log in messages:
+                        if log.author == client.user:
+                            continue
+                        logContent = log.content
+                        if not logContent.startswith('X-Mage, Commander:') and not logContent.startswith('X-Mage, Draft'): # check if !legit edh game
+                            logContent = "`" + logContent + "`\n -You\n\nThis makes zero sense to me asshole. Stop being a pleb and start your shit with \"X-Mage, Commander:\" or delete your spam. If there is an issue or a new game mode just contact <@!264196467403522048> for help."
+                            print(logContent)
+                            if log.author.dm_channel is None:
+                                await log.author.create_dm()
+                            await log.author.dm_channel.send(logContent)
             elif message.content == '/rank them':
                 inputChannel = discord.utils.get(message.guild.channels, id=713227906725183508) # setup #scoreboard
                 messages = await inputChannel.history(limit=1000).flatten() # read through all messages in channel
