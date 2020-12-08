@@ -3,7 +3,8 @@ import re
 import math
 from datetime import datetime
 
-client = discord.Client()
+intents = discord.Intents().all()
+client = discord.Client(prefix='', intents=intents)
 
 @client.event
 async def on_ready():
@@ -29,7 +30,13 @@ async def on_ready():
                     for position in game[1:]:
                         edhRanked += str(position[0]) + ") "
                         for player in position[1:]:
-                            edhRanked += "***`" + discord.utils.get(message.guild.members, id=int(player[3:21])).name + "`*** "
+                            currPlayer = message.guild.get_member(user_id=int(player[3:].strip(">")))
+                            if currPlayer is None: # user left server
+                                currPlayer = await client.fetch_user(user_id=int(player[3:].strip(">")))
+                                currPlayer = currPlayer.name
+                            else:
+                                currPlayer = currPlayer.display_name
+                            edhRanked += "***`" + currPlayer + "`*** "
                     edhRanked += "\n"
                 for x in messageTruncate(edhRanked):
                     await message.channel.send(x) # send results to #stats
@@ -88,14 +95,24 @@ async def on_ready():
                     #print(mode[1][0][1][0][3:len(mode[1][0][1][0]) - 1])
                     for player in mode[1][0]: # go through ranked players
                         #print("this is the message: " + str(player[0][3:len(player[0]) - 1]))
-                        player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
+                        currPlayer = message.guild.get_member(user_id=int(player[0][3:].strip(">")))
+                        if currPlayer is None: # user left server
+                            currPlayer = await client.fetch_user(user_id=int(player[0][3:].strip(">")))
+                            player[0] = currPlayer.name
+                        else:
+                            player[0] = currPlayer.display_name
                     for player in mode[1][1]: # go through unranked players
-                        player[0] = discord.utils.get(message.guild.members, id=int(player[0][3:len(player[0]) - 1])).display_name
+                        currPlayer = message.guild.get_member(user_id=int(player[0][3:].strip(">")))
+                        if currPlayer is None: # user left server
+                            currPlayer = await client.fetch_user(user_id=int(player[0][3:].strip(">")))
+                            player[0] = currPlayer.name
+                        else:
+                            player[0] = currPlayer.display_name
                     for x in messageTruncate(printRanking(mode[0], mode[1])):
                         await outputChannel.send(x) # send results to #stats
             else:
                 print(message.content)
-                await message.channel.send('The command "' + message.content + '" is unkown to me. Type "help" for a list of commands')
+                await message.channel.send('The command "' + message.content + '" is unkown to me. Type "/help" for a list of commands')
 
 def printRanking(dataName, cleanData):
     outputText = headerMaker(dataName)
@@ -142,20 +159,23 @@ def headerMaker(dataName):
     outputText += dataName.upper().center(82) + '\n-------------------------------------------------------------------\n'
     return outputText
 
-def messageTruncate(inputString):
-    maxLength = 1999
-    if len(inputString) < maxLength:
-        return [inputString[0:int(len(inputString))]]
-    arrayVersion = []
-    i = 0 # starting character for message
-    while (len(arrayVersion) + 1) * maxLength < len(inputString):
-        for j in range(maxLength * (len(arrayVersion) + 1), 0, -1): # by end of max message
-            if inputString[j-1:j] == "\n": # find new closest new line
-                arrayVersion.append(inputString[i:j])
-                i = j
-                break
-    arrayVersion.append(inputString[i:len(inputString)])
-    return arrayVersion
+def messageTruncate(inputString): # Makes string into multiple messages
+    maxLength = 1500 # This number doesnt error but not sure if its the max
+    if len(inputString) < maxLength: # Truncate not needed case
+        return [inputString] # return original massage as list
+    inputString = inputString.split("\n") # split by line
+    arrayVersion = [] # output message list
+    temp = "" # current message
+    while len(inputString) > 0: # add until no lines left
+        if len(temp + inputString[0] + "\n") < maxLength: # message not too long
+            temp += inputString[0] + "\n"
+            inputString.pop(0) # remove first line
+        else: # need to store current message and move to next one
+            arrayVersion.append(temp[:-2]) # removes extra \n
+            temp = ""
+    if len(temp) > 0: # add leftover goodies to end of message list
+        arrayVersion.append(temp[:-2])
+    return arrayVersion # return list of shorter strings so discord isnt mad
 
 def messageToArray(inputMessages):
     edhRanked = []
