@@ -28,19 +28,18 @@ async def on_ready():
                 for num, game in enumerate(messages, start = 1): # go through each game
                     edhRanked += str(num).rjust(3, '0') + "  "
                     for position in game[1:]:
-                        edhRanked += str(position[0]) + ") "
+                        edhRanked += str(position[0]) + ")  "
                         for player in position[1:]:
                             currPlayer = message.guild.get_member(user_id=int(player[3:].strip(">")))
                             if currPlayer is None: # user left server
                                 currPlayer = await client.fetch_user(user_id=int(player[3:].strip(">")))
-                                currPlayer = currPlayer.name
+                                currPlayer = "~~" + currPlayer.name + "~~"
                             else:
                                 currPlayer = currPlayer.display_name
-                            edhRanked += "***`" + currPlayer + "`*** "
+                            edhRanked += "_" + currPlayer + "_  "
                     edhRanked += "\n"
                 for x in messageTruncate(edhRanked):
                     await message.channel.send(x) # send results to #stats
-                    x = 0
             elif message.content == '/clean':
                 messages = await message.channel.history(limit=1000).flatten()
                 for x in messages:
@@ -160,7 +159,7 @@ def headerMaker(dataName):
     return outputText
 
 def messageTruncate(inputString): # Makes string into multiple messages
-    maxLength = 1500 # This number doesnt error but not sure if its the max
+    maxLength = 1999 # This number doesnt error but not sure if its the max
     if len(inputString) < maxLength: # Truncate not needed case
         return [inputString] # return original massage as list
     inputString = inputString.split("\n") # split by line
@@ -171,10 +170,10 @@ def messageTruncate(inputString): # Makes string into multiple messages
             temp += inputString[0] + "\n"
             inputString.pop(0) # remove first line
         else: # need to store current message and move to next one
-            arrayVersion.append(temp[:-2]) # removes extra \n
+            arrayVersion.append(temp.strip("\n")) # removes extra \n
             temp = ""
     if len(temp) > 0: # add leftover goodies to end of message list
-        arrayVersion.append(temp[:-2])
+        arrayVersion.append(temp.strip("\n"))
     return arrayVersion # return list of shorter strings so discord isnt mad
 
 def messageToArray(inputMessages):
