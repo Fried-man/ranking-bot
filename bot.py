@@ -30,9 +30,9 @@ async def on_ready():
                     for position in game[1:]:
                         edhRanked += str(position[0]) + ")  "
                         for player in position[1:]:
-                            currPlayer = message.guild.get_member(user_id=int(player[3:].strip(">")))
+                            currPlayer = message.guild.get_member(user_id=int(player[3:].strip(">").strip(" ")))
                             if currPlayer is None: # user left server
-                                currPlayer = await client.fetch_user(user_id=int(player[3:].strip(">")))
+                                currPlayer = await client.fetch_user(user_id=int(player[3:].strip(">").strip(" ")))
                                 currPlayer = "~~" + currPlayer.name + "~~"
                             else:
                                 currPlayer = currPlayer.display_name
@@ -87,17 +87,17 @@ async def on_ready():
                 for mode in scores:
                     for i, player in enumerate(mode[1][0]): # go through ranked players
                         name = list(player.keys())[0]
-                        currPlayer = message.guild.get_member(user_id=int(name[3:].strip(">")))
+                        currPlayer = message.guild.get_member(user_id=int(name[3:].strip(">").strip(" ")))
                         if currPlayer is None: # user left server
-                            currPlayer = await client.fetch_user(user_id=int(name[3:].strip(">")))
+                            currPlayer = await client.fetch_user(user_id=int(name[3:].strip(">").strip(" ")))
                             mode[1][0][i] = {currPlayer.name : player[name]}
                         else:
                             mode[1][0][i] = {currPlayer.display_name : player[name]}
                     for i, player in enumerate(mode[1][1]): # go through unranked players
                         name = list(player.keys())[0]
-                        currPlayer = message.guild.get_member(user_id=int(name[3:].strip(">")))
+                        currPlayer = message.guild.get_member(user_id=int(name[3:].strip(">").strip(" ")))
                         if currPlayer is None: # user left server
-                            currPlayer = await client.fetch_user(user_id=int(name[3:].strip(">")))
+                            currPlayer = await client.fetch_user(user_id=int(name[3:].strip(">").strip(" ")))
                             mode[1][1][i] = {currPlayer.name : player[name]}
                         else:
                             mode[1][1][i] = {currPlayer.display_name : player[name]}
@@ -132,7 +132,7 @@ def playerStats(player, rank):
     name = list(player.keys())[0]
     theData = player[name]
     stats = "***`" + rank + ") " + name + "`***\n" # first line
-    stats += '    - Calculated Score: ' + str(round(theData["finalScore"], 2)) + '\n' #second line
+    stats += '    - Calculated Score: ' + str(round(theData["finalScore"], 4)) + '\n' #second line
     stats += '    - Games Played & Recorded: ' + str(theData["totalGames"]) + '\n' #third line
     stats += '    - Total Score: ' + str(theData["totalScore"]) + '\n' # fourth line
     gamesPlayed = []
