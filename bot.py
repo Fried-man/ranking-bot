@@ -67,16 +67,32 @@ async def on_ready():
                 messages = messageToArray(messages)
                 scores = []
                 scores.append(["Overall Rankings", rankGames(messages)])
+                yearly = []
+                for game in messages:
+                    Found = False
+                    for year in yearly:
+                        if str(game[0].strftime("%Y OVERALL")) == year[0]:
+                            Found = True
+                            year[1].append(game)
+                    if not Found:
+                        yearly.append([str(game[0].strftime("%Y OVERALL")), [game]])
+                #print(yearly)
+                for year in yearly:
+                    if not year[0] == str(datetime.now().year) + " OVERALL":
+                        scores.append([year[0], rankGames(year[1])])
                 monthly = []
                 for game in messages:
+                    if not str(game[0].strftime("%Y")) == str(datetime.now().year):
+                        continue
                     Found = False
                     game[0] = str(game[0].strftime("%B - %Y"))
                     for month in monthly:
                         if game[0] == month[0]:
                             Found = True
                             month[1].append(game)
-                    if Found is False:
+                    if not Found:
                         monthly.append([game[0], [game]])
+                #print(monthly)
                 for month in monthly:
                     scores.append([month[0], rankGames(month[1])])
                 outputChannel = discord.utils.get(message.guild.channels, id=732452709101469757) # setup #stats
