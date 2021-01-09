@@ -14,6 +14,8 @@ async def on_ready():
     async def on_message(message):
         if message.author == client.user:
             return
+        global server
+        server = message.guild
 
         if message.content.startswith('/'):
             #theContent = message
@@ -136,11 +138,15 @@ def printRanking(dataName, cleanData):
             tiedData.append(rank)
     for i in range(0, len(tiedData)): # for each ranked player
         for rankedPlayer in tiedData[i]:
+            if server.get_member_named(list(rankedPlayer.keys())[0]) is None: # hide player who left server
+                continue
             tiePush = 0
             for rank in tiedData[:i]:
                 tiePush += len(rank) - 1
             outputText += playerStats(rankedPlayer, str(i + 1 + tiePush))
     for unrankedPlayer in cleanData[1]: # for each unranked player
+        if server.get_member_named(list(unrankedPlayer.keys())[0]) is None: # hide player who left server
+            continue
         outputText += playerStats(unrankedPlayer, "Unranked")
     return outputText
 
