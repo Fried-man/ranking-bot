@@ -1,42 +1,17 @@
-# ranking-bot
-This bot is intended to provide statistics and manage general scoreboard info.
-[Discord API for Python Documentation](https://discordpy.readthedocs.io/en/latest/)
-## Ideas
-- #decks should have tappedout links embeded into the deck names
-- #decks should have X-Mage deck files as the deck content
-- The leaderboards should have a version for a month/6 months/year etc and an overall as seperate versions
-- There should be a stat for most used deck per player
-- There should be a stat win-lose stat for each deck
-- There should ba a stat for how many games each player has completed
-- There should be a stat for mode rank per player
-- There should be a stat for the most common times for games to finish (average)
-## How to Rank 
-same = sum(total amount of ranks - user rank)/total amount of games
-| All | X-Mage | IRL/Budget|
-| --- | ------ | ---------- |
-| same | same | same |
-## Who Gets to be Ranked
-### ideas
-- player must play x games
-- player must play every person atleast once in the server (or from x group)
-## How the Bot Works
-1) _**Need trigger to start**_ (this trigger will be in the form of someone typing in #scoreboard)
-  * bot verifies if legit command 
-    * correct syntax for ranking
-    * check if decks exist in #decks for @player
-      * if not webscrape for name using tappedout username, reverify, and reject if nothing new
-  * anyone can type in scoreboard (bot asks a mod/admin for approval?)
-2) _**#scoreboard Message manipulation**_ (i.e. ctrl c + ctrl v) 
-  * bot copies message into local variable
-  * bot deletes original message
-  * bot enters message of variable info
-3) _**Update #stats**_
-  * delete every message in channel (except tappedout info for later use)
-  * bot enters new data
-    * rankings
-    * any other statistics we want
+# Ranking Bot
+## About
+The ranking bot is a comprehensive tool to help users track and analyze competition within their Discord community. Utilizing the Discord API and written in Python, the bot can record game history provided by server members and generate historical leaderboards and rankings. This functionality makes it an invaluable resource for those looking to keep track of their progress and performance in various competitions. 
+## Background
+As the COVID-19 pandemic swept across the globe, my friends and I were forced to adapt to a new normal of lockdowns and social distancing. To stay connected and pass the time, we turned to play Magic the Gathering online and eventually set up a Discord server as a hub for our group. As we played more and more games, I wanted to add a competitive edge to our hangouts by creating a program to automate the tracking of our matches. Not only was this project a great way to indulge my interests and curiosities, but it also helped bring some excitement and fun to our gatherings during a difficult and uncertain period. The program ended up being a huge success and added an extra layer of enjoyment to our time together.
+## Features
+The script is designed to enhance the competitive experience for users of a Discord server. It offers a range of features to help users track and analyze their game history, including command line functionality for ease of use, the ability to record games in a dedicated channel, and support for monitoring multiple players in different positions.
 
-## TODO:
-- Finalize everything
-- Program everything
-- ~~Add webhook in #dev-logs for this repo~~
+One of the critical features of the project is the timestamped recording of games. This allows users to reference specific matches and see their performance over time quickly. In addition, the work offers long-term statistics dedicated to different types of games, allowing users to see how they stack up against their peers in terms of overall performance.
+
+To further enhance the competitive experience, the work includes rankings for overall performance and different periods, such as yearly or monthly. This allows users to see how they are doing in the short term and in a long time. Additionally, the project includes help functions to ensure users have the information they need to get the most out of the tool.
+## What I Learned
+While working on the ranking bot project, I had the opportunity to learn more about how the Discord API works. This included learning how to access and utilize the API's various functions and features to build the bot's functionality.
+
+In addition to gaining a better understanding of the Discord API, I also gained more experience working with Python. This included improving my coding and problem-solving skills and becoming more familiar with the language and its capabilities.
+
+One of the critical things I learned while working on this project was more about data analysis. As the bot tracked and recorded game history, I had to learn how to correctly interpret and analyze this data to generate accurate leaderboards and rankings. This required me to develop my data visualization and analysis skills and learn more about how to present this information to users effectively. Overall, working on the ranking bot project allowed me to expand my knowledge and skills in several areas, and I am grateful for the opportunity to have been able to work on it.
